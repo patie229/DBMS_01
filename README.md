@@ -277,10 +277,21 @@ Answer the following questions in your own words and add your answers directly b
 **Question 1.1:** Why is `grep -v "^timestamp"` needed in the shell solution even though the files are already filtered with `grep -h "T02"`? Could this step be omitted? Justify your answer.
 
 > *Your answer:*
+>
+> grep -h "T02" filters lines that contain the substring T02, but it does not guarantee that header lines will never appear. If a header were accidentally duplicated or modified in a way that includes T02, it could slip through.
+grep -v "^timestamp" is therefore a safety measure to explicitly remove all header lines.
+Technically, it could be omitted in this dataset, but doing so would make the pipeline fragile and dependent on the exact file format.
 
 **Question 1.2:** The shell solution uses `sensordata/T02_*.csv` as a file pattern, even though `grep -h "T02"` already filters for `T02`. Why is the file pattern still important — and what would happen if you used `sensordata/*.csv` instead?
 
 > *Your answer:*
+>
+> The file pattern sensordata/T02_*.csv ensures that only files belonging to sensor T02 are read.
+If we used sensordata/*.csv, the shell would read all sensor files, and grep -h "T02" would then need to filter the lines. This would:
+- waste time by scanning irrelevant files,
+- increase the risk of false positives if another field happened to contain “T02”,
+- make the pipeline less efficient and less robust.
+The file pattern therefore prevents unnecessary work and avoids accidental matches.
 
 **Question 1.3:** The SQL solution uses `ORDER BY timestamp` even though `timestamp` is stored as type `TEXT`. Why does chronological sorting still work correctly? Under what condition would it fail?
 
@@ -363,14 +374,33 @@ EOF
 **Question 2.1:** The shell solution filters by date using `grep -rh "2026-03"`. What problem could arise if a sensor value happened to contain the string `2026-03` — for example as part of an error note? How does the SQL solution handle this problem?
 
 > *Your answer:*
+>
+> grep -rh "2026-03" matches the substring anywhere in the line.
+If a sensor value or error message accidentally contained “2026‑03”, the line would be incorrectly included even if the timestamp was from a different month.
+
+SQL avoids this problem because the condition timestamp LIKE '2026-03-%' applies only to the timestamp column, not to the entire row.
+This prevents false positives.
 
 **Question 2.2:** The SQL solution uses `timestamp LIKE '2026-03-%'` for the date filter instead of a proper date function. Name one advantage and one disadvantage of this approach.
 
 > *Your answer:*
+>
+> Advantage:  
+Using LIKE '2026-03-%' is simple, readable, and works perfectly with ISO‑formatted timestamps without requiring date functions.
+
+Disadvantage:  
+It is not a true date comparison. If the timestamp format changes or contains inconsistent values, the filter may fail.
+It also prevents the database from using more advanced date‑based optimizations
 
 **Question 2.3:** The SQL solution returns results sorted by `ORDER BY value_celsius DESC`. The shell solution does not include this sorting. Extend the shell solution to also sort by temperature in descending order and write your command here.
 
 > *Your answer (extended shell command):*
+>
+> grep -rh "2026-03" sensordata/ \
+  | grep -v "^timestamp" \
+  | awk -F',' '$4 > 25.0 {print $1, $2, $4}' \
+  | sort -k3,3nr
+
 
 ---
 
@@ -464,14 +494,37 @@ EOF
 **Question 3.1:** The `awk` solution initialises `min=9999` and `max=-9999`. What would happen if all temperature values in the dataset were greater than 9999? How could the initialisation be made more robust?
 
 > *Your answer:*
+>
+> If all temperature values were greater than 9999, the initial value min=9999 would never be updated, producing an incorrect result.
+Similarly, if all values were below −9999, max=-9999 would remain unchanged.
+A more robust initialization would be:
+- min = +infinity
+- max = -infinity
 
 **Question 3.2:** The SQL solution uses `GROUP BY sensor_id`. What would the query return *without* this clause — i.e. if you ran `SELECT sensor_id, MIN(value_celsius), MAX(value_celsius), ROUND(AVG(value_celsius), 1) FROM readings`? Try it and describe the result.
 
 > *Your answer:*
+>
+> Without GROUP BY sensor_id, the query computes:
+- one global minimum,
+- one global maximum,
+- one global average,
+- and returns a single arbitrary sensor_id.
+The result is one row summarizing the entire table, not one row per sensor.
 
 **Question 3.3:** Extend the SQL query with an additional column `COUNT(*) AS num_readings` that shows the total number of measurements for each sensor. Write the complete extended query here.
 
 > *Your answer (extended SQL query):*
+>
+> SELECT sensor_id,
+       MIN(value_celsius) AS min_temp,
+       MAX(value_celsius) AS max_temp,
+       ROUND(AVG(value_celsius), 1) AS avg_temp,
+       COUNT(*) AS num_readings
+FROM   readings
+GROUP  BY sensor_id
+ORDER  BY sensor_id;
+
 
 ---
 
@@ -483,21 +536,33 @@ After completing all three tasks, answer the following questions:
 Which approach was easier to write correctly on the first try? Explain which properties of each language contributed to this.
 
 > *Your answer:*
+>
+> SQL was easier to write correctly on the first attempt because it is declarative: you describe the result you want, and the database handles the details.
+The shell approach is imperative and requires multiple steps (grep, cut, awk, sort), each of which can fail or behave unexpectedly
 
 **Question B — Extensibility:**
 What would you need to change in the shell solution if a fifth sensor `T05` were added? What about the SQL solution? Which approach scales better — and why?
 
 > *Your answer:*
+>
+> In the shell solution, you would need to manually update the loop to include T05.
+In SQL, no changes are needed — GROUP BY sensor_id automatically includes any new sensor.
+SQL scales better because it does not rely on hard‑coded lists or manual file handling.
 
 **Question C — Performance:**
 The shell solution reads files from disk on every invocation. A database can cache frequently queried data in memory. What does this mean for performance with 10 000 sensors and multi-year measurement data?
 
 > *Your answer:*
+> With 10,000 sensors and multi‑year data, the shell would repeatedly read millions of lines from disk, making it extremely slow.
+A database caches data in memory, uses indexes, and avoids scanning irrelevant rows, resulting in dramatically better performance.
 
 **Question D — Declarative vs. imperative:**
 SQL is called a *declarative* language: you describe *what* you want, not *how* to compute it. Bash/awk, by contrast, are *imperative*: you write step by step how the result is to be computed. In which of the three tasks did you feel this difference most clearly? Justify your choice.
 
 > *Your answer:*
+> The difference between declarative and imperative approaches is most obvious in Task 3.
+The shell solution requires a loop, multiple pipes, and a non‑trivial awk script.
+The SQL solution expresses the entire computation in a single, readable query
 
 > **Screenshot 7:** Take a final screenshot of your terminal showing the SQLite prompt with a query of your own invention on the `readings` table — one you came up with yourself that goes beyond the tasks above — and insert it here.
 >

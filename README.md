@@ -501,7 +501,8 @@ SQL is called a *declarative* language: you describe *what* you want, not *how* 
 
 > **Screenshot 7:** Take a final screenshot of your terminal showing the SQLite prompt with a query of your own invention on the `readings` table — one you came up with yourself that goes beyond the tasks above — and insert it here.
 >
-> `[insert screenshot]`
+> `[insert screenshot]`<img width="651" height="392" alt="bild7" src="https://github.com/user-attachments/assets/3a832035-3bf7-443f-9728-0bd51684f7cd" />
+
 
 ---
 

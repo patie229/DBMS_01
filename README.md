@@ -1,3 +1,4 @@
+<img width="1025" height="704" alt="Unbenannt" src="https://github.com/user-attachments/assets/a772388d-e565-49cd-88df-3639afd38325" />
 <!-- Bild einbetten: ![Alternativer Text](relativer/pfad/zur/datei) -->
 ![SQLite Logo](assets/sqlite3_logo.gif)
 
@@ -63,7 +64,10 @@ If any of the above commands return `command not found`, resolve the installatio
 >
 > `[insert screenshot]`
 
----
+---<img width="826" height="344" alt="bild2" src="https://github.com/user-attachments/assets/9f3ac273-a89e-4407-9289-fd35abf30ee3" />
+
+
+
 
 ## Setup — Generating the Sample Dataset
 
@@ -109,7 +113,8 @@ cat sensordata/T01_2026-03-01.csv
 
 > **Screenshot 2:** Take a screenshot showing the output of `ls sensordata/ | head -8` and the contents of one CSV file, and insert it here.
 >
-> `[insert screenshot]`
+> `[insert screenshot]`<img width="826" height="344" alt="bild2" src="https://github.com/user-attachments/assets/7ade7ffc-8fcf-4038-8ff5-55b88937a332" />
+
 
 ### What does the script do, line by line?
 
@@ -123,7 +128,8 @@ sensors=("T01" "T02" "T03" "T04")
 ```
 Defines a bash array of four sensor identifiers. These will be used as both the sensor name in the data and as part of each filename.
 
-```bash
+```bash<img width="826" height="344" alt="bild2" src="https://github.com/user-attachments/assets/c6026bc0-1b57-40b0-a3ce-d1246fef10fe" />
+
 start=$(date -d "2026-03-01" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "2026-03-01" +%s)
 ```
 Converts the start date into a Unix timestamp — the number of seconds since 1970-01-01 00:00:00 UTC. The two alternative `date` syntaxes handle Linux (`-d`) and macOS (`-j -f`) respectively; `2>/dev/null` silently discards the error from whichever variant does not apply.
@@ -199,7 +205,8 @@ echo "Import complete."
 
 > **Screenshot 3:** Take a screenshot showing the successful execution of the import script and the result of the `COUNT(*)` query, and insert it here.
 >
-> `[insert screenshot]`
+> `[insert screenshot]`<img width="975" height="507" alt="bild3" src="https://github.com/user-attachments/assets/19c38666-70b6-4ac3-973f-615e626d4f2a" />
+
 
 ---
 
@@ -268,7 +275,10 @@ EOF
 
 > **Screenshot 4:** Take a screenshot showing the output of the Task 1 SQLite query (the first and last few rows are sufficient), and insert it here.
 >
-> `[insert screenshot]`
+> `[insert screenshot]`<img width="724" height="177" alt="bild4-1" src="https://github.com/user-attachments/assets/ffeb1ae2-7bbe-479e-946c-65f6fcee3a59" />
+<img width="459" height="53" alt="bild4-2" src="https://github.com/user-attachments/assets/00f7c08f-593b-4312-a3db-c4f46d64b505" />
+
+
 
 ### Questions for Task 1
 
